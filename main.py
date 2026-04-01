@@ -7,7 +7,7 @@ from typing import Optional
 from database import init_db, get_db, Event
 from schemas import EventCreate, EventResponse, StatsResponse
 
-app = FastAPI(title="Crush 边缘事件记录器", description="上传每次事件触发")
+app = FastAPI(title="边缘事件记录器", description="上传每次事件触发")
 
 init_db()
 
