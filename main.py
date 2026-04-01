@@ -7,7 +7,7 @@ from typing import Optional
 from database import init_db, get_db, Event
 from schemas import EventCreate, EventResponse, StatsResponse
 
-app = FastAPI(title="Crush 想念记录器", description="记录每一次想念的瞬间")
+app = FastAPI(title="Crush 边缘时间记录器", description="上传每次事件触发")
 
 init_db()
 
@@ -26,7 +26,7 @@ def health():
 
 @app.post("/events", response_model=EventResponse)
 def create_event(event: EventCreate, db: Session = Depends(get_db)):
-    """上报一次想念事件（JSON body）"""
+    """上报一次事件（JSON body）"""
     db_event = Event(
         category=event.category,
         note=event.note,
