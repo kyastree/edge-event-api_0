@@ -9,6 +9,12 @@ class EventCreate(BaseModel):
     intensity: int = Field(3, ge=1, le=5, description="想念强度 1-5")
 
 
+class EventUpdate(BaseModel):
+    category: Optional[str] = Field(None, min_length=1, max_length=50)
+    note: Optional[str] = Field(None, max_length=500)
+    intensity: Optional[int] = Field(None, ge=1, le=5)
+
+
 class EventResponse(BaseModel):
     id: int
     category: str

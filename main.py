@@ -1,11 +1,11 @@
-from fastapi import FastAPI, Depends, Query
+from fastapi import FastAPI, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 from database import init_db, get_db, Event
-from schemas import EventCreate, EventResponse, StatsResponse
+from schemas import EventCreate, EventUpdate, EventResponse, StatsResponse
 
 app = FastAPI(title="边缘事件记录器", description="上传每次事件触发")
 
@@ -76,6 +76,34 @@ def list_events(
     if end:
         q = q.filter(Event.created_at <= end)
     return q.order_by(Event.created_at.desc()).offset(offset).limit(limit).all()
+
+
+@app.put("/events/{event_id}", response_model=EventResponse)
+def update_event(event_id: int, event: EventUpdate, db: Session = Depends(get_db)):
+    """编辑事件"""
+    db_event = db.query(Event).filter(Event.id == event_id).first()
+    if not db_event:
+        raise HTTPException(status_code=404, detail="事件不存在")
+    if event.category is not None:
+        db_event.category = event.category
+    if event.note is not None:
+        db_event.note = event.note
+    if event.intensity is not None:
+        db_event.intensity = event.intensity
+    db.commit()
+    db.refresh(db_event)
+    return db_event
+
+
+@app.delete("/events/{event_id}")
+def delete_event(event_id: int, db: Session = Depends(get_db)):
+    """删除事件"""
+    db_event = db.query(Event).filter(Event.id == event_id).first()
+    if not db_event:
+        raise HTTPException(status_code=404, detail="事件不存在")
+    db.delete(db_event)
+    db.commit()
+    return {"detail": "已删除", "id": event_id}
 
 
 @app.get("/events/today", response_model=list[EventResponse])
