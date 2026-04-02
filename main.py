@@ -59,16 +59,22 @@ def quick_event(
 def list_events(
     category: Optional[str] = None,
     intensity: Optional[int] = Query(None, ge=1, le=5),
+    start: Optional[datetime] = Query(None, description="起始时间，如 2026-04-01 或 2026-04-01T08:00:00"),
+    end: Optional[datetime] = Query(None, description="结束时间，如 2026-04-02 或 2026-04-02T23:59:59"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ):
-    """查询事件列表，支持按类别/强度过滤 + 分页"""
+    """查询事件列表，支持按类别/强度/日期范围过滤 + 分页"""
     q = db.query(Event)
     if category:
         q = q.filter(Event.category == category)
     if intensity:
         q = q.filter(Event.intensity == intensity)
+    if start:
+        q = q.filter(Event.created_at >= start)
+    if end:
+        q = q.filter(Event.created_at <= end)
     return q.order_by(Event.created_at.desc()).offset(offset).limit(limit).all()
 
 
